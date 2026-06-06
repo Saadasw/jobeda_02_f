@@ -3,7 +3,10 @@ import { useDisclosure } from '@mantine/hooks';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/useAuth';
 
-const NAV_ITEMS = [{ label: 'Dashboard', to: '/dashboard' }];
+const NAV_ITEMS = [
+  { label: 'Dashboard', to: '/dashboard' },
+  { label: 'Students', to: '/students' },
+];
 
 export function AppLayout() {
   const [opened, { toggle }] = useDisclosure();
