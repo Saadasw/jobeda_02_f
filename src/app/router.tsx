@@ -4,7 +4,7 @@ import { NotFoundPage } from '@/components/NotFoundPage';
 import { ForbiddenPage } from '@/components/ForbiddenPage';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
-import { ProtectedRoute } from '@/auth/guards';
+import { ProtectedRoute, RoleRoute } from '@/auth/guards';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -18,8 +18,15 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
-      { path: 'dashboard', element: <DashboardPage /> },
-      // Role-gated feature routes (RoleRoute) are added as modules land.
+      {
+        path: 'dashboard',
+        element: (
+          <RoleRoute roles={['owner', 'admin']}>
+            <DashboardPage />
+          </RoleRoute>
+        ),
+      },
+      // More role-gated feature routes are added as modules land.
     ],
   },
   { path: '*', element: <NotFoundPage /> },
