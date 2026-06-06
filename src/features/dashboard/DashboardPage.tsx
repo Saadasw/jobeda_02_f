@@ -47,7 +47,8 @@ export function DashboardPage() {
             />
             <StatCard label="Students" value={String(summary.data.total_students)} />
             <StatCard label="Employees" value={String(summary.data.total_employees)} />
-            <StatCard label="Pending Payments" value={String(summary.data.pending_payments)} />
+            {/* "Pending Payments" hidden for now: nothing creates a non-completed
+                payment yet, so it's always 0. Restore when a pending/confirm flow exists. */}
           </SimpleGrid>
         )}
       </AsyncBoundary>
