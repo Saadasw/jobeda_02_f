@@ -1,4 +1,5 @@
-import { Anchor, Badge, Group, SimpleGrid, Stack, Table, Text, Title } from '@mantine/core';
+import { Anchor, Badge, Button, Group, SimpleGrid, Stack, Table, Text, Title } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { getStudent, getStudentFeeDetails, getStudentSummary } from './api';
@@ -6,6 +7,10 @@ import { StatCard } from '@/components/StatCard';
 import { AsyncBoundary } from '@/components/AsyncBoundary';
 import { formatMoney } from '@/lib/money';
 import { formatMonth } from '@/lib/date';
+import { useAuthStore } from '@/auth/authStore';
+import { TakePaymentModal } from '@/features/payments/TakePaymentModal';
+
+const COLLECT_ROLES = ['owner', 'admin', 'accountant'];
 
 function statusColor(status: string | null | undefined): string {
   switch (status) {
@@ -42,6 +47,11 @@ export function StudentDetailPage() {
     enabled,
   });
 
+  const [payOpened, payHandlers] = useDisclosure(false);
+  const role = useAuthStore((s) => s.user?.role_name);
+  const canCollect = COLLECT_ROLES.includes(role ?? '');
+  const due = Number(summary.data?.due ?? 0);
+
   return (
     <Stack gap="lg">
       <Anchor component={Link} to="/students" size="sm">
@@ -55,10 +65,13 @@ export function StudentDetailPage() {
         onRetry={() => student.refetch()}
       >
         {student.data && (
-          <div>
-            <Title order={2}>{student.data.name}</Title>
-            <Text c="dimmed">{student.data.class ?? '—'}</Text>
-          </div>
+          <Group justify="space-between" align="flex-start">
+            <div>
+              <Title order={2}>{student.data.name}</Title>
+              <Text c="dimmed">{student.data.class ?? '—'}</Text>
+            </div>
+            {canCollect && <Button onClick={payHandlers.open}>Take Payment</Button>}
+          </Group>
         )}
       </AsyncBoundary>
 
@@ -141,6 +154,16 @@ export function StudentDetailPage() {
           )}
         </AsyncBoundary>
       </div>
+
+      {canCollect && student.data && (
+        <TakePaymentModal
+          opened={payOpened}
+          onClose={payHandlers.close}
+          studentId={studentId}
+          studentName={student.data.name}
+          due={due}
+        />
+      )}
     </Stack>
   );
 }
