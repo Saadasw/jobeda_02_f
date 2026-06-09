@@ -3,10 +3,12 @@ import { useDisclosure } from '@mantine/hooks';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { getStudent, getStudentFeeDetails, getStudentSummary } from './api';
+import { StudentPaymentsTable } from './StudentPaymentsTable';
+import { getGuardian } from '@/features/guardians/api';
 import { StatCard } from '@/components/StatCard';
 import { AsyncBoundary } from '@/components/AsyncBoundary';
 import { formatMoney } from '@/lib/money';
-import { formatMonth } from '@/lib/date';
+import { formatDate, formatMonth } from '@/lib/date';
 import { useAuthStore } from '@/auth/authStore';
 import { TakePaymentModal } from '@/features/payments/TakePaymentModal';
 
@@ -24,6 +26,22 @@ function statusColor(status: string | null | undefined): string {
     default:
       return 'gray';
   }
+}
+
+function titleCase(value: string | null | undefined): string {
+  if (!value) return '—';
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <Text size="xs" c="dimmed" tt="uppercase">
+        {label}
+      </Text>
+      <Text size="sm">{value}</Text>
+    </div>
+  );
 }
 
 export function StudentDetailPage() {
@@ -46,11 +64,36 @@ export function StudentDetailPage() {
     queryFn: () => getStudentFeeDetails(studentId, { limit: 100 }),
     enabled,
   });
+  const guardianId = student.data?.guardian_id ?? null;
+  const guardian = useQuery({
+    queryKey: ['guardian', guardianId],
+    queryFn: () => getGuardian(guardianId as number),
+    enabled: guardianId != null,
+  });
 
   const [payOpened, payHandlers] = useDisclosure(false);
   const role = useAuthStore((s) => s.user?.role_name);
   const canCollect = COLLECT_ROLES.includes(role ?? '');
   const due = Number(summary.data?.due ?? 0);
+
+  const d = student.data;
+  const subtitle = d
+    ? [
+        d.registration_no ? `Reg ${d.registration_no}` : null,
+        d.class,
+        d.section ? `Section ${d.section}` : null,
+        d.roll_no != null ? `Roll ${d.roll_no}` : null,
+      ]
+        .filter(Boolean)
+        .join('  ·  ')
+    : '';
+  const guardianText = guardianId == null
+    ? '—'
+    : guardian.data
+      ? guardian.data.phone
+        ? `${guardian.data.name} · ${guardian.data.phone}`
+        : guardian.data.name
+      : 'Loading…';
 
   return (
     <Stack gap="lg">
@@ -64,14 +107,24 @@ export function StudentDetailPage() {
         error={student.error}
         onRetry={() => student.refetch()}
       >
-        {student.data && (
-          <Group justify="space-between" align="flex-start">
-            <div>
-              <Title order={2}>{student.data.name}</Title>
-              <Text c="dimmed">{student.data.class ?? '—'}</Text>
-            </div>
-            {canCollect && <Button onClick={payHandlers.open}>Take Payment</Button>}
-          </Group>
+        {d && (
+          <Stack gap="md">
+            <Group justify="space-between" align="flex-start">
+              <div>
+                <Title order={2}>{d.name}</Title>
+                <Text c="dimmed">{subtitle || '—'}</Text>
+              </div>
+              {canCollect && <Button onClick={payHandlers.open}>Take Payment</Button>}
+            </Group>
+
+            <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
+              <Info label="Date of birth" value={formatDate(d.date_of_birth)} />
+              <Info label="Gender" value={titleCase(d.gender)} />
+              <Info label="Admission date" value={formatDate(d.admission_date)} />
+              <Info label="Guardian" value={guardianText} />
+              <Info label="Address" value={d.address || '—'} />
+            </SimpleGrid>
+          </Stack>
         )}
       </AsyncBoundary>
 
@@ -96,9 +149,9 @@ export function StudentDetailPage() {
       </AsyncBoundary>
 
       <div>
-        <Group justify="space-between" mb="sm">
-          <Title order={4}>Fees</Title>
-        </Group>
+        <Title order={4} mb="sm">
+          Fees
+        </Title>
         <AsyncBoundary
           isLoading={fees.isLoading}
           isError={fees.isError}
@@ -155,12 +208,19 @@ export function StudentDetailPage() {
         </AsyncBoundary>
       </div>
 
-      {canCollect && student.data && (
+      <div>
+        <Title order={4} mb="sm">
+          Payments
+        </Title>
+        <StudentPaymentsTable studentId={studentId} />
+      </div>
+
+      {canCollect && d && (
         <TakePaymentModal
           opened={payOpened}
           onClose={payHandlers.close}
           studentId={studentId}
-          studentName={student.data.name}
+          studentName={d.name}
           due={due}
         />
       )}

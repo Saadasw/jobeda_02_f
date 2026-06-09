@@ -1,5 +1,13 @@
 import { api } from '@/api/client';
 
+/** Payment methods accepted across the app (Take Payment + history filter). */
+export const PAYMENT_METHODS = [
+  { value: 'cash', label: 'Cash' },
+  { value: 'bank', label: 'Bank' },
+  { value: 'mobile', label: 'Mobile banking' },
+  { value: 'cheque', label: 'Cheque' },
+] as const;
+
 export interface CreatePaymentPayload {
   student_id: number;
   amount: number;

@@ -111,6 +111,7 @@ export function TakePaymentModal({ opened, onClose, studentId, studentName, due 
       // Refresh everything this payment affects.
       queryClient.invalidateQueries({ queryKey: ['student-summary', studentId] });
       queryClient.invalidateQueries({ queryKey: ['student-fees', studentId] });
+      queryClient.invalidateQueries({ queryKey: ['student-payments', studentId] });
       queryClient.invalidateQueries({ queryKey: ['students'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-summary'] });
       queryClient.invalidateQueries({ queryKey: ['overdue-aging'] });
