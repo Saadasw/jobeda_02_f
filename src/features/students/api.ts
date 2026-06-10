@@ -13,6 +13,7 @@ export interface StudentRow {
   section_id: number | null;
   section: string | null;
   roll_no: number | null;
+  fee_group: string | null;
   total_fee: Money;
   total_paid: Money;
   due: Money;

@@ -149,7 +149,7 @@ export function StudentsListPage() {
       >
         {query.data && (
           <>
-            <Table.ScrollContainer minWidth={900}>
+            <Table.ScrollContainer minWidth={980}>
               <Table highlightOnHover striped verticalSpacing="sm">
                 <Table.Thead>
                   <Table.Tr>
@@ -158,6 +158,7 @@ export function StudentsListPage() {
                     <Table.Th>Class</Table.Th>
                     <Table.Th>Section</Table.Th>
                     <Table.Th>Roll</Table.Th>
+                    <Table.Th>Group</Table.Th>
                     <Table.Th style={{ textAlign: 'right' }}>Total Fee</Table.Th>
                     <Table.Th style={{ textAlign: 'right' }}>Paid</Table.Th>
                     <Table.Th style={{ textAlign: 'right' }}>Due</Table.Th>
@@ -167,7 +168,7 @@ export function StudentsListPage() {
                 <Table.Tbody>
                   {query.data.data.length === 0 ? (
                     <Table.Tr>
-                      <Table.Td colSpan={9}>
+                      <Table.Td colSpan={10}>
                         <Text c="dimmed" ta="center" py="md">
                           No students found.
                         </Text>
@@ -185,6 +186,7 @@ export function StudentsListPage() {
                         <Table.Td>{s.class ?? '—'}</Table.Td>
                         <Table.Td>{s.section ?? '—'}</Table.Td>
                         <Table.Td>{s.roll_no ?? '—'}</Table.Td>
+                        <Table.Td>{s.fee_group ?? '—'}</Table.Td>
                         <Table.Td style={{ textAlign: 'right' }}>{formatMoney(s.total_fee)}</Table.Td>
                         <Table.Td style={{ textAlign: 'right' }}>{formatMoney(s.total_paid)}</Table.Td>
                         <Table.Td
