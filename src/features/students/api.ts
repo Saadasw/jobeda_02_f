@@ -125,7 +125,12 @@ export function createStudent(payload: CreateStudentPayload): Promise<StudentDet
 
 export interface UpdateStudentPayload {
   name?: string;
+  admission_date?: string;
+  date_of_birth?: string;
+  gender?: Gender;
+  address?: string;
   fee_group_id?: number;
+  guardian_id?: number;
 }
 
 export function updateStudent(id: number, payload: UpdateStudentPayload): Promise<StudentDetail> {

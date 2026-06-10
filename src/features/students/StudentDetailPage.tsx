@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { getStudent, getStudentFeeDetails, getStudentSummary, updateStudent } from './api';
 import { StudentPaymentsTable } from './StudentPaymentsTable';
+import { EditStudentModal } from './EditStudentModal';
 import { getGuardian } from '@/features/guardians/api';
 import { listFeeGroups } from '@/features/fees/api';
 import { StatCard } from '@/components/StatCard';
@@ -82,6 +83,7 @@ export function StudentDetailPage() {
   });
 
   const [payOpened, payHandlers] = useDisclosure(false);
+  const [editOpened, editHandlers] = useDisclosure(false);
   const role = useAuthStore((s) => s.user?.role_name);
   const canCollect = COLLECT_ROLES.includes(role ?? '');
   const due = Number(summary.data?.due ?? 0);
@@ -124,7 +126,14 @@ export function StudentDetailPage() {
                 <Title order={2}>{d.name}</Title>
                 <Text c="dimmed">{subtitle || '—'}</Text>
               </div>
-              {canCollect && <Button onClick={payHandlers.open}>Take Payment</Button>}
+              {canCollect && (
+                <Group gap="sm">
+                  <Button variant="default" onClick={editHandlers.open}>
+                    Edit
+                  </Button>
+                  <Button onClick={payHandlers.open}>Take Payment</Button>
+                </Group>
+              )}
             </Group>
 
             <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
@@ -254,6 +263,10 @@ export function StudentDetailPage() {
           studentName={d.name}
           due={due}
         />
+      )}
+
+      {canCollect && d && (
+        <EditStudentModal opened={editOpened} onClose={editHandlers.close} student={d} />
       )}
     </Stack>
   );
