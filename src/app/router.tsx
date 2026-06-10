@@ -6,6 +6,8 @@ import { LoginPage } from '@/features/auth/LoginPage';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { StudentsListPage } from '@/features/students/StudentsListPage';
 import { StudentDetailPage } from '@/features/students/StudentDetailPage';
+import { FeeStructuresPage } from '@/features/fees/FeeStructuresPage';
+import { FeeGroupsPage } from '@/features/fees/FeeGroupsPage';
 import { ProtectedRoute, RoleRoute } from '@/auth/guards';
 
 export const router = createBrowserRouter([
@@ -30,6 +32,22 @@ export const router = createBrowserRouter([
       },
       { path: 'students', element: <StudentsListPage /> },
       { path: 'students/:id', element: <StudentDetailPage /> },
+      {
+        path: 'fees/structures',
+        element: (
+          <RoleRoute roles={['owner', 'admin', 'accountant']}>
+            <FeeStructuresPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: 'fees/groups',
+        element: (
+          <RoleRoute roles={['owner', 'admin', 'accountant']}>
+            <FeeGroupsPage />
+          </RoleRoute>
+        ),
+      },
       // More role-gated feature routes are added as modules land.
     ],
   },

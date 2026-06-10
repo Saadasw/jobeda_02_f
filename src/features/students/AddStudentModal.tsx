@@ -20,6 +20,7 @@ import { createStudent, type Gender } from './api';
 import { GuardianPicker, type GuardianSelection } from './GuardianPicker';
 import { listAcademicYears, listClasses, listSections } from '@/features/academic/api';
 import { createGuardian, type GuardianRelation } from '@/features/guardians/api';
+import { listFeeGroups } from '@/features/fees/api';
 import { normalizeError } from '@/api/errors';
 import { todayISODate } from '@/lib/date';
 
@@ -37,6 +38,7 @@ const schema = z.object({
   date_of_birth: z.string(),
   gender: z.string(),
   address: z.string(),
+  fee_group_id: z.string(),
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -55,6 +57,7 @@ const emptyDefaults: FormValues = {
   date_of_birth: '',
   gender: '',
   address: '',
+  fee_group_id: '',
 };
 
 export function AddStudentModal({ opened, onClose }: Props) {
@@ -81,6 +84,7 @@ export function AddStudentModal({ opened, onClose }: Props) {
     queryFn: () => listSections(Number(classId)),
     enabled: !!classId,
   });
+  const feeGroups = useQuery({ queryKey: ['fee-groups'], queryFn: listFeeGroups });
 
   // Reset everything when the modal opens.
   useEffect(() => {
@@ -98,6 +102,14 @@ export function AddStudentModal({ opened, onClose }: Props) {
       if (current) setValue('academic_year_id', String(current.id));
     }
   }, [opened, years.data, getValues, setValue]);
+
+  // Default the fee group to "Day" once groups load.
+  useEffect(() => {
+    if (opened && feeGroups.data && !getValues('fee_group_id')) {
+      const day = feeGroups.data.find((g) => g.name.toLowerCase() === 'day') ?? feeGroups.data[0];
+      if (day) setValue('fee_group_id', String(day.id));
+    }
+  }, [opened, feeGroups.data, getValues, setValue]);
 
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
@@ -125,6 +137,7 @@ export function AddStudentModal({ opened, onClose }: Props) {
         date_of_birth: values.date_of_birth || undefined,
         gender: (values.gender || undefined) as Gender | undefined,
         address: values.address.trim() || undefined,
+        fee_group_id: values.fee_group_id ? Number(values.fee_group_id) : undefined,
         guardian_id: guardianId,
       });
     },
@@ -219,6 +232,21 @@ export function AddStudentModal({ opened, onClose }: Props) {
             />
             <TextInput label="Admission date" type="date" {...register('admission_date')} />
           </SimpleGrid>
+
+          <Controller
+            name="fee_group_id"
+            control={control}
+            render={({ field }) => (
+              <Select
+                label="Fee group"
+                description="Determines which price list bills this student"
+                placeholder={feeGroups.isLoading ? 'Loading…' : 'Select group'}
+                data={(feeGroups.data ?? []).map((g) => ({ value: String(g.id), label: g.name }))}
+                value={field.value || null}
+                onChange={(v) => field.onChange(v ?? '')}
+              />
+            )}
+          />
 
           <Divider label="Bio" labelPosition="left" />
 

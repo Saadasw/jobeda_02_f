@@ -1,10 +1,11 @@
-import { Anchor, Badge, Button, Group, SimpleGrid, Stack, Table, Text, Title } from '@mantine/core';
+import { Anchor, Badge, Button, Group, Select, SimpleGrid, Stack, Table, Text, Title } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
-import { getStudent, getStudentFeeDetails, getStudentSummary } from './api';
+import { getStudent, getStudentFeeDetails, getStudentSummary, updateStudent } from './api';
 import { StudentPaymentsTable } from './StudentPaymentsTable';
 import { getGuardian } from '@/features/guardians/api';
+import { listFeeGroups } from '@/features/fees/api';
 import { StatCard } from '@/components/StatCard';
 import { AsyncBoundary } from '@/components/AsyncBoundary';
 import { formatMoney } from '@/lib/money';
@@ -70,6 +71,15 @@ export function StudentDetailPage() {
     queryFn: () => getGuardian(guardianId as number),
     enabled: guardianId != null,
   });
+  const feeGroups = useQuery({ queryKey: ['fee-groups'], queryFn: listFeeGroups });
+  const queryClient = useQueryClient();
+  const updateGroup = useMutation({
+    mutationFn: (fee_group_id: number) => updateStudent(studentId, { fee_group_id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', studentId] });
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+    },
+  });
 
   const [payOpened, payHandlers] = useDisclosure(false);
   const role = useAuthStore((s) => s.user?.role_name);
@@ -122,6 +132,27 @@ export function StudentDetailPage() {
               <Info label="Gender" value={titleCase(d.gender)} />
               <Info label="Admission date" value={formatDate(d.admission_date)} />
               <Info label="Guardian" value={guardianText} />
+              <div>
+                <Text size="xs" c="dimmed" tt="uppercase">
+                  Fee group
+                </Text>
+                {canCollect ? (
+                  <Select
+                    data={(feeGroups.data ?? []).map((g) => ({ value: String(g.id), label: g.name }))}
+                    value={d.fee_group_id ? String(d.fee_group_id) : null}
+                    onChange={(v) => v && updateGroup.mutate(Number(v))}
+                    placeholder="Set group"
+                    size="xs"
+                    allowDeselect={false}
+                    disabled={updateGroup.isPending}
+                    mt={2}
+                  />
+                ) : (
+                  <Text size="sm">
+                    {(feeGroups.data ?? []).find((g) => g.id === d.fee_group_id)?.name ?? '—'}
+                  </Text>
+                )}
+              </div>
               <Info label="Address" value={d.address || '—'} />
             </SimpleGrid>
           </Stack>

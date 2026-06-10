@@ -3,9 +3,11 @@ import { useDisclosure } from '@mantine/hooks';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/useAuth';
 
-const NAV_ITEMS = [
-  { label: 'Dashboard', to: '/dashboard' },
+const NAV_ITEMS: { label: string; to: string; roles?: string[] }[] = [
+  { label: 'Dashboard', to: '/dashboard', roles: ['owner', 'admin'] },
   { label: 'Students', to: '/students' },
+  { label: 'Fee structures', to: '/fees/structures', roles: ['owner', 'admin', 'accountant'] },
+  { label: 'Fee groups', to: '/fees/groups', roles: ['owner', 'admin', 'accountant'] },
 ];
 
 export function AppLayout() {
@@ -53,7 +55,7 @@ export function AppLayout() {
 
       <AppShell.Navbar p="xs">
         <ScrollArea>
-          {NAV_ITEMS.map((item) => (
+          {NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(user?.role_name ?? '')).map((item) => (
             <NavLink
               key={item.to}
               component={Link}

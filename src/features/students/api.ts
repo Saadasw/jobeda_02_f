@@ -43,6 +43,7 @@ export interface StudentDetail {
   gender: string | null;
   address: string | null;
   guardian_id: number | null;
+  fee_group_id: number | null;
   created_at: string | null;
 }
 
@@ -114,10 +115,20 @@ export interface CreateStudentPayload {
   gender?: Gender;
   address?: string;
   guardian_id?: number;
+  fee_group_id?: number;
 }
 
 export function createStudent(payload: CreateStudentPayload): Promise<StudentDetail> {
   return api.post<StudentDetail>('/students', payload).then((r) => r.data);
+}
+
+export interface UpdateStudentPayload {
+  name?: string;
+  fee_group_id?: number;
+}
+
+export function updateStudent(id: number, payload: UpdateStudentPayload): Promise<StudentDetail> {
+  return api.put<StudentDetail>(`/students/${id}`, payload).then((r) => r.data);
 }
 
 export function getStudent(id: number): Promise<StudentDetail> {
