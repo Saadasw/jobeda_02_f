@@ -27,4 +27,4 @@ Demo login: **owner@jobeda.com / Owner@123 / tenant slug `jobeda`**.
 ## Status (see ../jobeda/HANDOFF.md for detail)
 Built & browser-verified through commit `c856d65`: auth, owner dashboard, students list+detail, fee-collection (Take Payment modal).
 **Next**: consume the student-identity fields the backend exposed in `jobeda` commit `a373525` — admission form (bio + guardian picker), Reg-No/Section/Roll columns + status/has_dues filters on the list, and a filterable payment-history view.
-**Note**: this repo has **no git remote yet** — pushing it to GitHub is a pending step.
+**Remote**: `github.com/Saadasw/jobeda_02_f` (pushed; `main` tracks `origin/main`).
