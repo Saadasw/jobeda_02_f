@@ -24,7 +24,7 @@ Demo login: **owner@jobeda.com / Owner@123 / tenant slug `jobeda`**.
 - Restart the dev server fresh before browser end-to-end checks — HMR churn can leave a Mantine **modal rendered empty**.
 - The backend returns money as strings on some endpoints and numbers on others — `formatMoney` already absorbs this; don't add ad-hoc parsing.
 
-## Status (see ../jobeda/HANDOFF.md for detail)
-Built & browser-verified through commit `c856d65`: auth, owner dashboard, students list+detail, fee-collection (Take Payment modal).
-**Next**: consume the student-identity fields the backend exposed in `jobeda` commit `a373525` — admission form (bio + guardian picker), Reg-No/Section/Roll columns + status/has_dues filters on the list, and a filterable payment-history view.
+## Status (see ../jobeda/HANDOFF.md for the full picture + backlog)
+Built & browser-verified through `57f04f1`: auth, owner dashboard, students (list with Reg-No/Section/Roll/Group columns + filters, admission, detail, **Edit**, payment history), guardian picker, **Fees** section (groups CRUD, structure editor, group-aware Generate modal), Take Payment.
 **Remote**: `github.com/Saadasw/jobeda_02_f` (pushed; `main` tracks `origin/main`).
+**What's next** lives in `../jobeda/HANDOFF.md §5` — top items: role-gate the open writes, contract-phase migration, roll assignment + class transfer, and several missing admin UIs (Users, Fee Types, Expenses/Income/Payroll).
