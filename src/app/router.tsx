@@ -8,6 +8,7 @@ import { StudentsListPage } from '@/features/students/StudentsListPage';
 import { StudentDetailPage } from '@/features/students/StudentDetailPage';
 import { FeeStructuresPage } from '@/features/fees/FeeStructuresPage';
 import { FeeGroupsPage } from '@/features/fees/FeeGroupsPage';
+import { FeeTypesPage } from '@/features/fees/FeeTypesPage';
 import { ProtectedRoute, RoleRoute } from '@/auth/guards';
 
 export const router = createBrowserRouter([
@@ -32,6 +33,14 @@ export const router = createBrowserRouter([
       },
       { path: 'students', element: <StudentsListPage /> },
       { path: 'students/:id', element: <StudentDetailPage /> },
+      {
+        path: 'fees/types',
+        element: (
+          <RoleRoute roles={['owner', 'admin', 'accountant']}>
+            <FeeTypesPage />
+          </RoleRoute>
+        ),
+      },
       {
         path: 'fees/structures',
         element: (

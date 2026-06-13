@@ -6,6 +6,7 @@ import { useAuth } from '@/auth/useAuth';
 const NAV_ITEMS: { label: string; to: string; roles?: string[] }[] = [
   { label: 'Dashboard', to: '/dashboard', roles: ['owner', 'admin'] },
   { label: 'Students', to: '/students' },
+  { label: 'Fee types', to: '/fees/types', roles: ['owner', 'admin', 'accountant'] },
   { label: 'Fee structures', to: '/fees/structures', roles: ['owner', 'admin', 'accountant'] },
   { label: 'Fee groups', to: '/fees/groups', roles: ['owner', 'admin', 'accountant'] },
 ];

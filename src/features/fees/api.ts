@@ -12,6 +12,29 @@ export interface FeeType {
 }
 export const listFeeTypes = () => api.get<FeeType[]>('/fee-types').then((r) => r.data);
 
+export const FEE_TYPE_FREQUENCIES = ['monthly', 'termly', 'annual', 'one_time', 'adhoc'] as const;
+
+export interface FeeTypePayload {
+  name: string;
+  frequency: string;
+  account_id: number;
+  is_recurring: boolean;
+}
+export const createFeeType = (b: FeeTypePayload) =>
+  api.post<FeeType>('/fee-types', b).then((r) => r.data);
+export const updateFeeType = (id: number, b: Partial<FeeTypePayload>) =>
+  api.put<FeeType>(`/fee-types/${id}`, b).then((r) => r.data);
+export const deleteFeeType = (id: number) =>
+  api.delete(`/fee-types/${id}`).then((r) => r.data);
+
+// Chart of accounts — used for the fee-type income-account picker (filter to type 'revenue').
+export interface Account {
+  id: number;
+  name: string;
+  type: string | null;
+}
+export const listAccounts = () => api.get<Account[]>('/accounts').then((r) => r.data);
+
 // ─── Fee groups ──────────────────────────────────────────────────────────────
 export interface FeeGroup {
   id: number;
