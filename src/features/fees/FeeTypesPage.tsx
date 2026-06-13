@@ -17,11 +17,11 @@ import {
   createFeeType,
   deleteFeeType,
   FEE_TYPE_FREQUENCIES,
-  listAccounts,
   listFeeTypes,
   updateFeeType,
   type FeeType,
 } from './api';
+import { listAccounts } from '@/features/accounts/api';
 import { AsyncBoundary } from '@/components/AsyncBoundary';
 import { normalizeError } from '@/api/errors';
 

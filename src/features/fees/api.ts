@@ -27,14 +27,6 @@ export const updateFeeType = (id: number, b: Partial<FeeTypePayload>) =>
 export const deleteFeeType = (id: number) =>
   api.delete(`/fee-types/${id}`).then((r) => r.data);
 
-// Chart of accounts — used for the fee-type income-account picker (filter to type 'revenue').
-export interface Account {
-  id: number;
-  name: string;
-  type: string | null;
-}
-export const listAccounts = () => api.get<Account[]>('/accounts').then((r) => r.data);
-
 // ─── Fee groups ──────────────────────────────────────────────────────────────
 export interface FeeGroup {
   id: number;
