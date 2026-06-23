@@ -15,7 +15,7 @@ const NAV_ITEMS: { label: string; to: string; roles?: string[] }[] = [
 ];
 
 export function AppLayout() {
-  const [opened, { toggle }] = useDisclosure();
+  const [opened, { toggle, close }] = useDisclosure();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -66,6 +66,7 @@ export function AppLayout() {
               to={item.to}
               label={item.label}
               active={pathname.startsWith(item.to)}
+              onClick={close}
             />
           ))}
         </ScrollArea>
