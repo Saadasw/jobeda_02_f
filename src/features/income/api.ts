@@ -15,7 +15,12 @@ export interface CreateIncomePayload {
   description?: string;
 }
 
-export const listIncome = () =>
-  api.get<Income[]>('/income', { params: { limit: 100 } }).then((r) => r.data);
+export interface IncomeListParams {
+  from?: string;
+  to?: string;
+  limit?: number;
+}
+export const listIncome = (params: IncomeListParams = {}) =>
+  api.get<Income[]>('/income', { params }).then((r) => r.data);
 export const createIncome = (b: CreateIncomePayload) =>
   api.post<Income>('/income', b).then((r) => r.data);

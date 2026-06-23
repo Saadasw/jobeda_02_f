@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Alert,
   Button,
@@ -33,6 +33,11 @@ export interface MoneyCreate {
   date: string;
   description?: string;
 }
+export interface MoneyListParams {
+  from?: string;
+  to?: string;
+  limit?: number;
+}
 
 interface Props {
   /** "Expenses" / "Income" (plural, for the title). */
@@ -44,8 +49,35 @@ interface Props {
   accountLabel: string;
   amountColor: string;
   queryKey: string;
-  list: () => Promise<MoneyEntry[]>;
+  list: (params: MoneyListParams) => Promise<MoneyEntry[]>;
   create: (b: MoneyCreate) => Promise<MoneyEntry>;
+}
+
+// ─── Date-range presets ──────────────────────────────────────────────────────
+const PRESET_OPTIONS = [
+  { value: 'this_month', label: 'This month' },
+  { value: 'last_month', label: 'Last month' },
+  { value: 'this_year', label: 'This year' },
+  { value: 'all', label: 'All time' },
+  { value: 'custom', label: 'Custom range' },
+];
+const PERIOD_LABEL: Record<string, string> = {
+  this_month: 'this month',
+  last_month: 'last month',
+  this_year: 'this year',
+  all: 'all time',
+  custom: 'selected range',
+};
+
+function ymd(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+/** Range for the calendar month `monthsAgo` before the current one (0 = this month). */
+function monthRange(monthsAgo: number): { from: string; to: string } {
+  const now = new Date();
+  const from = new Date(now.getFullYear(), now.getMonth() - monthsAgo, 1);
+  const to = new Date(now.getFullYear(), now.getMonth() - monthsAgo + 1, 0); // last day of that month
+  return { from: ymd(from), to: ymd(to) };
 }
 
 export function MoneyEntryPage({
@@ -60,8 +92,31 @@ export function MoneyEntryPage({
   create,
 }: Props) {
   const queryClient = useQueryClient();
-  const entries = useQuery({ queryKey: [queryKey], queryFn: list });
   const accounts = useQuery({ queryKey: ['accounts'], queryFn: listAccounts });
+
+  // Filter state — default to the current month (a transaction log is period-oriented).
+  const [preset, setPreset] = useState<string>('this_month');
+  const initial = monthRange(0);
+  const [customFrom, setCustomFrom] = useState(initial.from);
+  const [customTo, setCustomTo] = useState(initial.to);
+
+  const range: MoneyListParams =
+    preset === 'all'
+      ? {}
+      : preset === 'custom'
+        ? { from: customFrom || undefined, to: customTo || undefined }
+        : preset === 'this_year'
+          ? { from: `${new Date().getFullYear()}-01-01`, to: `${new Date().getFullYear()}-12-31` }
+          : preset === 'last_month'
+            ? monthRange(1)
+            : monthRange(0);
+
+  // Pull the whole selected period (limit 1000) so the total is correct, not just a page.
+  const entries = useQuery({
+    queryKey: [queryKey, range.from ?? null, range.to ?? null],
+    queryFn: () => list({ ...range, limit: 1000 }),
+    placeholderData: keepPreviousData,
+  });
 
   const [opened, handlers] = useDisclosure(false);
   const [date, setDate] = useState(todayISODate());
@@ -111,6 +166,16 @@ export function MoneyEntryPage({
         {blurb}
       </Text>
 
+      <Group gap="sm" align="flex-end">
+        <Select label="Period" data={PRESET_OPTIONS} value={preset} onChange={(v) => setPreset(v ?? 'this_month')} allowDeselect={false} w={160} />
+        {preset === 'custom' && (
+          <>
+            <TextInput label="From" type="date" value={customFrom} onChange={(e) => setCustomFrom(e.currentTarget.value)} w={150} />
+            <TextInput label="To" type="date" value={customTo} onChange={(e) => setCustomTo(e.currentTarget.value)} w={150} />
+          </>
+        )}
+      </Group>
+
       <AsyncBoundary
         isLoading={entries.isLoading || accounts.isLoading}
         isError={entries.isError}
@@ -134,7 +199,7 @@ export function MoneyEntryPage({
                     <Table.Tr>
                       <Table.Td colSpan={4}>
                         <Text c="dimmed" ta="center" py="md">
-                          Nothing recorded yet.
+                          No {noun} recorded for {PERIOD_LABEL[preset]}.
                         </Text>
                       </Table.Td>
                     </Table.Tr>
@@ -156,7 +221,7 @@ export function MoneyEntryPage({
             {entries.data.length > 0 && (
               <Group justify="flex-end">
                 <Text size="sm" fw={600}>
-                  Total ({entries.data.length}):{' '}
+                  Total — {PERIOD_LABEL[preset]} ({entries.data.length}):{' '}
                   <Text span c={amountColor}>
                     {formatMoney(total)}
                   </Text>
