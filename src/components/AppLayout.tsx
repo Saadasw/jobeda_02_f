@@ -10,6 +10,8 @@ const NAV_ITEMS: { label: string; to: string; roles?: string[] }[] = [
   { label: 'Fee structures', to: '/fees/structures', roles: ['owner', 'admin', 'accountant'] },
   { label: 'Fee groups', to: '/fees/groups', roles: ['owner', 'admin', 'accountant'] },
   { label: 'Accounts', to: '/accounts', roles: ['owner', 'admin', 'accountant'] },
+  { label: 'Expenses', to: '/expenses', roles: ['owner', 'admin', 'accountant'] },
+  { label: 'Income', to: '/income', roles: ['owner', 'admin', 'accountant'] },
 ];
 
 export function AppLayout() {

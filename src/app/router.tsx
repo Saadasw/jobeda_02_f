@@ -10,6 +10,8 @@ import { FeeStructuresPage } from '@/features/fees/FeeStructuresPage';
 import { FeeGroupsPage } from '@/features/fees/FeeGroupsPage';
 import { FeeTypesPage } from '@/features/fees/FeeTypesPage';
 import { AccountsPage } from '@/features/accounts/AccountsPage';
+import { ExpensesPage } from '@/features/expenses/ExpensesPage';
+import { IncomePage } from '@/features/income/IncomePage';
 import { ProtectedRoute, RoleRoute } from '@/auth/guards';
 
 export const router = createBrowserRouter([
@@ -63,6 +65,22 @@ export const router = createBrowserRouter([
         element: (
           <RoleRoute roles={['owner', 'admin', 'accountant']}>
             <AccountsPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: 'expenses',
+        element: (
+          <RoleRoute roles={['owner', 'admin', 'accountant']}>
+            <ExpensesPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: 'income',
+        element: (
+          <RoleRoute roles={['owner', 'admin', 'accountant']}>
+            <IncomePage />
           </RoleRoute>
         ),
       },
