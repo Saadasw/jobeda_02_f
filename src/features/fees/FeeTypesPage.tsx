@@ -42,6 +42,7 @@ export function FeeTypesPage() {
   const [name, setName] = useState('');
   const [frequency, setFrequency] = useState<string>('monthly');
   const [accountId, setAccountId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<FeeType | null>(null);
 
   const revenueAccounts = (accounts.data ?? []).filter((a) => a.type === 'revenue');
   const accountName = (id: number | null) =>
@@ -80,7 +81,10 @@ export function FeeTypesPage() {
 
   const remove = useMutation({
     mutationFn: (id: number) => deleteFeeType(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['fee-types'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-types'] });
+      setDeleting(null);
+    },
   });
 
   const canSave = !!name.trim() && !!accountId;
@@ -132,8 +136,10 @@ export function FeeTypesPage() {
                           size="xs"
                           variant="subtle"
                           color="red"
-                          onClick={() => remove.mutate(ft.id)}
-                          loading={remove.isPending && remove.variables === ft.id}
+                          onClick={() => {
+                            remove.reset();
+                            setDeleting(ft);
+                          }}
                         >
                           Delete
                         </Button>
@@ -166,6 +172,23 @@ export function FeeTypesPage() {
             <Button variant="default" onClick={handlers.close}>Cancel</Button>
             <Button onClick={() => save.mutate()} loading={save.isPending} disabled={!canSave}>
               {editing ? 'Save' : 'Add'}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <Modal opened={!!deleting} onClose={() => setDeleting(null)} title="Delete fee type" centered>
+        <Stack>
+          {remove.isError && <Alert color="red" variant="light">{normalizeError(remove.error).message}</Alert>}
+          <Text size="sm">
+            Delete fee type “{deleting?.name}”? It will be hidden from new price lists and billing.
+          </Text>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={() => setDeleting(null)}>
+              Cancel
+            </Button>
+            <Button color="red" loading={remove.isPending} onClick={() => deleting && remove.mutate(deleting.id)}>
+              Delete
             </Button>
           </Group>
         </Stack>
