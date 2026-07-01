@@ -16,7 +16,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { ENROLLMENT_STATUSES, listStudents } from './api';
 import { AddStudentModal } from './AddStudentModal';
-import { listClasses, listSections } from '@/features/academic/api';
+import { AssignRollsModal } from './AssignRollsModal';
+import { listAcademicYears, listClasses, listSections } from '@/features/academic/api';
 import { AsyncBoundary } from '@/components/AsyncBoundary';
 import { formatMoney } from '@/lib/money';
 import { formatDate } from '@/lib/date';
@@ -35,6 +36,7 @@ export function StudentsListPage() {
   const role = useAuthStore((s) => s.user?.role_name);
   const canManage = MANAGE_ROLES.includes(role ?? '');
   const [addOpened, addHandlers] = useDisclosure(false);
+  const [rollsOpened, rollsHandlers] = useDisclosure(false);
 
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebouncedValue(search, 300);
@@ -50,6 +52,8 @@ export function StudentsListPage() {
     queryFn: () => listSections(Number(classId)),
     enabled: !!classId,
   });
+  const years = useQuery({ queryKey: ['academic-years'], queryFn: listAcademicYears });
+  const currentYearId = (years.data?.find((y) => y.is_current) ?? years.data?.[0])?.id;
 
   const query = useQuery({
     queryKey: ['students', { page, search: debouncedSearch, classId, sectionId, status, hasDues }],
@@ -77,7 +81,16 @@ export function StudentsListPage() {
     <Stack gap="md">
       <Group justify="space-between">
         <Title order={2}>Students</Title>
-        {canManage && <Button onClick={addHandlers.open}>＋ Admit student</Button>}
+        {canManage && (
+          <Group gap="sm">
+            {classId && sectionId && (
+              <Button variant="default" onClick={rollsHandlers.open}>
+                Assign rolls
+              </Button>
+            )}
+            <Button onClick={addHandlers.open}>＋ Admit student</Button>
+          </Group>
+        )}
       </Group>
 
       <Group gap="sm" align="flex-end">
@@ -217,6 +230,19 @@ export function StudentsListPage() {
       </AsyncBoundary>
 
       {canManage && <AddStudentModal opened={addOpened} onClose={addHandlers.close} />}
+
+      {canManage && classId && sectionId && currentYearId != null && (
+        <AssignRollsModal
+          opened={rollsOpened}
+          onClose={rollsHandlers.close}
+          academicYearId={currentYearId}
+          classId={Number(classId)}
+          sectionId={Number(sectionId)}
+          label={`${classOptions.find((c) => c.value === classId)?.label ?? ''} · Section ${
+            sectionOptions.find((s) => s.value === sectionId)?.label ?? ''
+          }`}
+        />
+      )}
     </Stack>
   );
 }

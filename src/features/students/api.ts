@@ -137,6 +137,21 @@ export function updateStudent(id: number, payload: UpdateStudentPayload): Promis
   return api.put<StudentDetail>(`/students/${id}`, payload).then((r) => r.data);
 }
 
+// ─── Roll assignment (per class-section roster) ──────────────────────────────
+export interface RollAssignItem {
+  student_id: number;
+  roll_no: number | null;
+}
+export interface AssignRollsPayload {
+  academic_year_id: number;
+  class_id: number;
+  section_id: number;
+  assignments: RollAssignItem[];
+}
+export function assignRolls(payload: AssignRollsPayload): Promise<{ assigned: number; cleared: number }> {
+  return api.post('/students/assign-rolls', payload).then((r) => r.data);
+}
+
 export function getStudent(id: number): Promise<StudentDetail> {
   return api.get<StudentDetail>(`/students/${id}`).then((r) => r.data);
 }
